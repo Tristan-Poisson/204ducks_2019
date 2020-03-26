@@ -24,6 +24,9 @@ def check_for_err():
     except ValueError:
         print("Flag error. Try -h for more informations.")
         sys.exit(84)
+    if flag < 0 or flag > 2.5:
+        print("Flag error. Try -h for more informations.")
+        sys.exit(84)
     return flag
 
 def calc(val):
