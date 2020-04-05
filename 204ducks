@@ -9,11 +9,14 @@
 import sys
 import math
 
+proba = lambda val, t: val * math.exp(-t) + (4 - 3 * val) * math.exp(-2 * t) + (2 * val - 4) * math.exp(-4 * t)
+perba = lambda val, t: sum(proba(val, i / 100) for i in range(t * 100))
+
 def check_for_err():
     halp = open("help", "r")
 
     if len(sys.argv) > 1 and sys.argv[1] == "-h":
-        print(halp.read(), end = '')
+        print(halp.read(), end='')
         sys.exit(0)
     if len(sys.argv) != 2:
         print("Flag error. Try -h for more informations.")
@@ -29,8 +32,44 @@ def check_for_err():
         sys.exit(84)
     return flag
 
+def display(res):
+    print("Average return time: {:d}m {:02d}s".format(int(res[0][0]), int(res[0][1])))
+    print("Standard deviation: {:.3f}".format(res[1]))
+    print("Time after which 50%% of the ducks are back: {:d}m {:02d}s".format(int(res[2][0]), int(res[2][1])))
+    print("Time after which 99%% of the ducks are back: {:d}m {:02d}s".format(int(res[3][0]), int(res[3][1])))
+    print("Percentage of ducks back after 1 minute: {:.1f}%".format(res[4]))
+    print("Percentage of ducks back after 2 minutes: {:.1f}%".format(res[5]))
+
+def probb(val, p):
+    res = 0
+    for t in range(10 * 100):
+        res += proba(val, t / 100)
+        if res >= p:
+            return t / 100
+
 def calc(val):
-    print(val)
+    res = []
+    p = 0
+    r = 0
+    t = 0
+    while p < 99.9999:
+        p += proba(val, t) / 10
+        r += (proba(val, t) / 10) * t
+        t += 0.001
+    r /= 99.9999
+    r += 1. / 60
+    res.append(divmod(r * 60, 60))
+    dev = 0
+    while t > 0:
+        dev += ((t - r) ** 2) * (proba(val, t) / 10)
+        t -= 0.001
+    dev /= 99.9999
+    res.append(dev ** 0.5)
+    res.append(divmod(probb(val, 50) * 60, 60))
+    res.append(divmod(probb(val, 99) * 60, 60))
+    res.append(perba(val, 1))
+    res.append(perba(val, 2))
+    display(res)
     return 0
 
 def main():
